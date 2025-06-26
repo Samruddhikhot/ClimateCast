@@ -1,45 +1,97 @@
-import './weatherApp.css';
-// ...existing code...
 import React, { useState } from 'react';
-import axios from 'axios';
+
+const apiKey = '44c589f849cc6e1fa537df3bbc6fc11d';
 
 function WeatherApp() {
-  const [weatherData, setWeatherData] = useState({});
-  const [location, setLocation] = useState('');
-  const [error, setError] = useState(null);
+  const [place, setPlace] = useState('');
+  const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
- const fetchWeatherData = () => {
-  setLoading(true);
-  setError(null);
-  const apiKey = '44c589f849cc6e1fa537df3bbc6fc11d';
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${apiKey}&units=metric`;
-  axios.get(url)
-    .then(response => {
-      setWeatherData(response.data);
-      setLoading(false);
-    })
-    .catch(error => {
-      setError(error.message);
-      setLoading(false);
-    });
-};
+  const fetchWeather = async () => {
+    setLoading(true);
+    setError('');
+    setWeather(null);
+    try {
+      const res = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${place}&appid=${apiKey}&units=metric`
+      );
+      const data = await res.json();
+      if (data.cod === 200) {
+        setWeather(data);
+      } else {
+        setError('Place not found. Please try again!');
+      }
+    } catch {
+      setError('Something went wrong. Try again later.');
+    }
+    setLoading(false);
+  };
+
   return (
-    <div>
-      <input
-        type="text"
-        value={location}
-        onChange={(e) => setLocation(e.target.value)}
-        placeholder="Enter location"
+    <div className="weather-container">
+      <img
+        src="https://cdn-icons-png.flaticon.com/512/1163/1163661.png"
+        alt="Weather Icon"
+        style={{ width: 80, marginBottom: 16, animation: 'popIn 1s' }}
       />
-      <button onClick={fetchWeatherData}>Get Weather</button>
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {weatherData.main && (
-        <div>
-          <h2>Weather in {weatherData.name}</h2>
-          <p>Temperature: {weatherData.main.temp}°C</p>
-          <p>Humidity: {weatherData.main.humidity}%</p>
+      <div className="weather-title">🌤️ Welcome to ClimateCast!</div>
+      <div style={{ marginBottom: 16, color: '#555', fontSize: '1.1rem' }}>
+        Enter a place name to get the latest weather:
+      </div>
+      <input
+        className="weather-input"
+        type="text"
+        value={place}
+        onChange={e => setPlace(e.target.value)}
+        placeholder="e.g. Mumbai"
+        onKeyDown={e => e.key === 'Enter' && fetchWeather()}
+        disabled={loading}
+      />
+      <button
+        className="weather-btn"
+        onClick={fetchWeather}
+        disabled={loading || !place}
+        style={{ marginTop: 8 }}
+      >
+        {loading ? 'Loading...' : 'Get Weather'}
+      </button>
+      {error && (
+        <div className="weather-result" style={{ color: 'red', animation: 'fadeIn 1s' }}>
+          {error}
+        </div>
+      )}
+      {weather && (
+        <div
+          className="weather-result"
+          style={{
+            marginTop: 32,
+            borderRadius: 12,
+            background: 'rgba(97,218,251,0.08)',
+            padding: 20,
+            boxShadow: '0 2px 12px rgba(97,218,251,0.15)',
+            animation: 'fadeInDown 1s'
+          }}
+        >
+          <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#21a1f3' }}>
+            {weather.name}, {weather.sys.country}
+          </div>
+          <div style={{ fontSize: '3rem', fontWeight: 'bold', margin: '10px 0' }}>
+            {Math.round(weather.main.temp)}°C
+          </div>
+          <div style={{ fontSize: '1.2rem', marginBottom: 8 }}>
+            <img
+              src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`}
+              alt={weather.weather[0].description}
+              style={{ verticalAlign: 'middle', width: 60 }}
+            />
+            <span style={{ marginLeft: 8, textTransform: 'capitalize' }}>
+              {weather.weather[0].description}
+            </span>
+          </div>
+          <div style={{ color: '#555', marginTop: 8 }}>
+            Humidity: <b>{weather.main.humidity}%</b> | Wind: <b>{weather.wind.speed} m/s</b>
+          </div>
         </div>
       )}
     </div>
