@@ -16,7 +16,34 @@ body {
   margin: 80px auto;
   text-align: center;
   animation: fadeInDown 1s;
+  width: 90vw;
+  box-sizing: border-box;
 }
+
+
+/* Responsive styles */
+@media (max-width: 600px) {
+  .weather-container {
+    padding: 20px 8px;
+    max-width: 98vw;
+    margin: 30px auto;
+  }
+  .weather-title {
+    font-size: 1.4rem;
+  }
+  .weather-input {
+    font-size: 0.95rem;
+    width: 95%;
+  }
+  .weather-btn {
+    font-size: 0.95rem;
+    padding: 8px 16px;
+  }
+  .weather-result {
+    font-size: 1rem;
+  }
+}
+
 
 @keyframes fadeInDown {
   from {
